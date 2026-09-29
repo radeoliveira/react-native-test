@@ -1,0 +1,16 @@
+image: node:22
+
+stages:
+  - build
+
+cache:
+  paths:
+    - node_modules/
+
+build_ios:
+  stage: build
+  script:
+    - npm install -g eas-cli@latest
+    - npm install
+    - eas login
+    - eas build --platform ios --profile development --non-interactive --clear-cache
