@@ -1,0 +1,31 @@
+name: ios-unsigned
+on: workflow_dispatch
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+      - run: npx expo prebuild --platform ios
+      - name: Build unsigned
+        run: |
+          xcodebuild \
+            -workspace ios/MyReactNativeApp.xcworkspace \
+            -scheme MyReactNativeApp \
+            -configuration Release \
+            -sdk iphoneos \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY=""
+      - name: Package ipa
+        run: |
+          mkdir Payload
+          cp -r build/Build/Products/Release-iphoneos/MyReactNativeApp.app Payload/
+          zip -r app.ipa Payload
+      - uses: actions/upload-artifact@v4
+        with:
+          name: app-unsigned
+          path: app.ipa
